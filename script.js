@@ -90,7 +90,7 @@ class App {
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
-    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this._eventTarget.bind(this));
   }
 
   _getPosition() {
@@ -230,6 +230,14 @@ class App {
     let html = `
     <li class="workout workout--${workout.type}" data-id="${workout.id}">
       <h2 class="workout__title">${workout.description}</h2>
+      <div class="workout__functions">
+            <button class="btn">
+              <i class="ph-fill ph-pencil-simple btnEdit"></i>
+            </button>
+            <button class="btn">
+              <i class="ph-fill ph-trash-simple btnDel"></i>
+            </button>
+          </div>
         <div class="workout__details">
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴'
@@ -277,6 +285,13 @@ class App {
     form.insertAdjacentHTML('afterend', html);
   }
 
+  _eventTarget(e) {
+    if (e.target.classList.contains('btnDel')) this._deleteWorkout(e);
+    if (e.target.classList.contains('btnEdit')) this._editWorkout(e);
+
+    this._moveToPopup(e);
+  }
+
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
 
@@ -286,7 +301,8 @@ class App {
       work => work.id === workoutEl.dataset.id
     );
 
-    console.log(workout);
+    // Guard clause to prevent the error after removing a marker from the map in _deleteWorkout function
+    if (!workout) return;
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
@@ -294,9 +310,6 @@ class App {
         duration: 1,
       },
     });
-
-    // Using the public interface
-    workout.click();
   }
 
   _setLocalStorage() {
@@ -325,6 +338,26 @@ class App {
 
   reset() {
     localStorage.removeItem('workouts');
+    location.reload();
+  }
+
+  _deleteWorkout(e) {
+    const workoutEl = e.target.closest('.workout');
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+
+    // Remove workout from workouts array
+    this.#workouts.splice(this.#workouts.indexOf(workout), 1);
+
+    // Remove workout from list
+    workoutEl.remove();
+
+    // Remove marker from map
+    L.marker(workout.coords).remove();
+
+    // Update local storage & refresh the page
+    this._setLocalStorage();
     location.reload();
   }
 }
