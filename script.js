@@ -146,6 +146,8 @@ class App {
     setTimeout(() => (form.style.display = 'grid'), 1000);
   }
 
+  _showEditForm()
+
   _toggleElevationField() {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
@@ -286,23 +288,40 @@ class App {
   }
 
   _eventTarget(e) {
-    if (e.target.classList.contains('btnDel')) this._deleteWorkout(e);
-    if (e.target.classList.contains('btnEdit')) this._editWorkout(e);
-
-    this._moveToPopup(e);
-  }
-
-  _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
-
-    if (!workoutEl) return;
-
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
 
+    if (e.target.classList.contains('btnDel'))
+      this._deleteWorkout(e, workout, workoutEl);
+    if (e.target.classList.contains('btnEdit')) this._editWorkout(e, workout);
+
+    this._moveToPopup(e, workout, workoutEl);
+  }
+
+  _deleteWorkout(e, workout, workoutEl) {
+    // Remove workout from workouts array
+    this.#workouts.splice(this.#workouts.indexOf(workout), 1);
+
+    // Remove workout from list
+    workoutEl.remove();
+
+    // Remove marker from map
+    L.marker(workout.coords).remove();
+
+    // Update local storage & refresh the page
+    this._setLocalStorage();
+    location.reload();
+  }
+
+  _editWorkout(e, workout) {
+    this._showEditForm();
+  }
+
+  _moveToPopup(e, workout, workoutEl) {
     // Guard clause to prevent the error after removing a marker from the map in _deleteWorkout function
-    if (!workout) return;
+    if (!workout || !workoutEl) return;
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
@@ -338,26 +357,6 @@ class App {
 
   reset() {
     localStorage.removeItem('workouts');
-    location.reload();
-  }
-
-  _deleteWorkout(e) {
-    const workoutEl = e.target.closest('.workout');
-    const workout = this.#workouts.find(
-      work => work.id === workoutEl.dataset.id
-    );
-
-    // Remove workout from workouts array
-    this.#workouts.splice(this.#workouts.indexOf(workout), 1);
-
-    // Remove workout from list
-    workoutEl.remove();
-
-    // Remove marker from map
-    L.marker(workout.coords).remove();
-
-    // Update local storage & refresh the page
-    this._setLocalStorage();
     location.reload();
   }
 }
