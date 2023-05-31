@@ -52,6 +52,10 @@ a:visited {
   color: var(--color-brand--1);
 }
 
+.hidden {
+  display: none;
+}
+
 /* SIDEBAR */
 .sidebar {
   flex-basis: 50rem;
@@ -132,7 +136,8 @@ a:visited {
   font-weight: 800;
 }
 
-.form {
+.form,
+.form-edit {
   background-color: var(--color-dark--2);
   border-radius: 5px;
   padding: 1.5rem 2.75rem;
@@ -141,13 +146,21 @@ a:visited {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem 2.5rem;
+}
 
+.form {
   /* Match height and activity boxes */
   height: 9.25rem;
   transition: all 0.5s, transform 1ms;
 }
 
-.form.hidden {
+.form-edit {
+  transition: all 0.5s, transform 1ms;
+  z-index: 999;
+}
+
+.form.hidden,
+.form-edit.hidden {
   transform: translateY(-30rem);
   height: 0;
   padding: 0 2.25rem;

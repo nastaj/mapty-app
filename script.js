@@ -66,6 +66,7 @@ class Cycling extends Workout {
 /////////////////////////////////
 // APPLICATION ARCHITECTURE
 
+// Elements
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -145,8 +146,6 @@ class App {
     form.classList.add('hidden');
     setTimeout(() => (form.style.display = 'grid'), 1000);
   }
-
-  _showEditForm()
 
   _toggleElevationField() {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
@@ -294,13 +293,17 @@ class App {
     );
 
     if (e.target.classList.contains('btnDel'))
-      this._deleteWorkout(e, workout, workoutEl);
-    if (e.target.classList.contains('btnEdit')) this._editWorkout(e, workout);
+      this._deleteWorkout(workout, workoutEl);
+    if (e.target.classList.contains('btnEdit')) {
+      // Disable button after click
+      e.target.classList.add('hidden');
 
+      this._editWorkout(e, workout);
+    }
     this._moveToPopup(e, workout, workoutEl);
   }
 
-  _deleteWorkout(e, workout, workoutEl) {
+  _deleteWorkout(workout, workoutEl) {
     // Remove workout from workouts array
     this.#workouts.splice(this.#workouts.indexOf(workout), 1);
 
@@ -315,8 +318,82 @@ class App {
     location.reload();
   }
 
-  _editWorkout(e, workout) {
-    this._showEditForm();
+  _editWorkout(e) {
+    e.preventDefault();
+
+    // Edit Form Elements
+    const workoutEl = e.target.closest('.workout');
+    const editDistance = document.querySelector('.form__input--distance--edit');
+    const editDuration = document.querySelector('.form__input--duration--edit');
+    const editCadence = document.querySelector('.form__input--cadence--edit');
+    const editElevation = document.querySelector(
+      '.form__input--elevation--edit'
+    );
+
+    console.log(workoutEl);
+
+    // Display edit form
+    this._renderEditForm(workoutEl);
+
+    // Check inputs
+    const validInputs = (...inputs) =>
+      inputs.every(inp => Number.isFinite(inp));
+    const allPositive = (...inputs) => inputs.every(inp => inp > 0);
+
+    // Get data from form
+
+    // If workout running, modify corresponding running object
+
+    // If workout cycling, modify corresponding cycling object
+
+    // Render new workout values in list
+
+    // Hide form + Cledar input fields
+
+    // Set local storage to all workouts
+  }
+
+  _renderEditForm(workoutEl) {
+    const html = `<form class="form-edit" data-id="${workoutEl.dataset.id}">
+    <div class="form__row">
+      <label class="form__label">Type</label>
+      <select class="form__input form__input--type--edit">
+        <option value="running">Running</option>
+        <option value="cycling">Cycling</option>
+      </select>
+    </div>
+    <div class="form__row">
+      <label class="form__label">Distance</label>
+      <input
+        class="form__input form__input--distance--edit"
+        placeholder="km"
+      />
+    </div>
+    <div class="form__row">
+      <label class="form__label">Duration</label>
+      <input
+        class="form__input form__input--duration--edit"
+        placeholder="min"
+      />
+    </div>
+    <div class="form__row">
+      <label class="form__label">Cadence</label>
+      <input
+        class="form__input form__input--cadence--edit"
+        placeholder="step/min"
+      />
+    </div>
+    <div class="form__row form__row--hidden">
+      <label class="form__label">Elev Gain</label>
+      <input
+        class="form__input form__input--elevation--edit"
+        placeholder="meters"
+      />
+    </div>
+    <button class="form__btn">OK</button>
+  </form>`;
+
+    form.insertAdjacentHTML('afterend', html);
   }
 
   _moveToPopup(e, workout, workoutEl) {
