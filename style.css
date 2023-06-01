@@ -155,9 +155,22 @@ a:visited {
 }
 
 .form-edit {
+  animation: append-animate 0.3s ease-in;
+  transform-origin: 50% 0;
   transition: all 0.5s, transform 1ms;
   padding-top: 3rem;
   position: relative;
+}
+
+@keyframes append-animate {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 .form.hidden,

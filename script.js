@@ -202,7 +202,7 @@ class App {
     // Render workout on list
     this._renderWorkout(workout);
 
-    // Hide form + Cledar input fields
+    // Hide form + Clear input fields
     this._hideForm();
 
     // Set local storage to all workouts
@@ -301,7 +301,7 @@ class App {
       this._editWorkout(e, workout);
 
       // Disable button after click
-      e.target.classList.add('hidden');
+      // e.target.classList.add('hidden');
     }
     this._moveToPopup(e, workout, workoutEl);
   }
@@ -321,11 +321,29 @@ class App {
     location.reload();
   }
 
-  _editWorkout(e) {
+  _editWorkout(e, workout) {
+    // Display edit form
+    const workoutEl = e.target.closest('.workout');
+    this._renderEditForm(workoutEl);
+
+    const form = document.querySelector('.form-edit');
+    form.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        this._submitEdit(e, workout);
+      }
+    });
+  }
+
+  _submitEdit(e, workout) {
     e.preventDefault();
 
+    // Check functions
+    const validInputs = (...inputs) =>
+      inputs.every(inp => Number.isFinite(inp));
+    const allPositive = (...inputs) => inputs.every(inp => inp > 0);
+
     // Edit Form Elements
-    const workoutEl = e.target.closest('.workout');
+    const editType = document.querySelector('.form__input--type--edit');
     const editDistance = document.querySelector('.form__input--distance--edit');
     const editDuration = document.querySelector('.form__input--duration--edit');
     const editCadence = document.querySelector('.form__input--cadence--edit');
@@ -333,27 +351,60 @@ class App {
       '.form__input--elevation--edit'
     );
 
-    console.log(workoutEl);
-
-    // Display edit form
-    this._renderEditForm(workoutEl);
-
-    // Check inputs
-    const validInputs = (...inputs) =>
-      inputs.every(inp => Number.isFinite(inp));
-    const allPositive = (...inputs) => inputs.every(inp => inp > 0);
-
     // Get data from form
+    const type = editType.value;
+    const distance = +editDistance.value;
+    const duration = +editDuration.value;
 
+    console.log(workout);
     // If workout running, modify corresponding running object
+    if (type === 'running') {
+      const cadence = +editCadence.value;
+      // Check if data is valid
+      if (
+        !validInputs(distance, duration, cadence) ||
+        !allPositive(distance, duration, cadence)
+      )
+        return alert('Inputs have to be positive numbers!');
+
+      // Edit workout values
+      workout.type = type;
+      workout.distance = distance;
+      workout.duration = duration;
+      workout.cadence = cadence;
+
+      // Update pace
+      workout.calcPace();
+    }
 
     // If workout cycling, modify corresponding cycling object
+    if (type === 'cycling') {
+      const elevation = +editElevation.value;
+      // Check if data is valid
+      if (
+        !validInputs(distance, duration, elevation) ||
+        !allPositive(distance, duration)
+      )
+        return alert('Inputs have to be positive numbers!');
+
+      // Edit workout values
+      workout.type = type;
+      workout.distance = distance;
+      workout.duration = duration;
+      workout.coords = [lat, lng];
+      workout.elevationGain = elevation;
+
+      // Update speed
+      workout.calcSpeed();
+    }
 
     // Render new workout values in list
 
-    // Hide form + Cledar input fields
-
     // Set local storage to all workouts
+    this._setLocalStorage();
+
+    // Hide form + Clear input fields
+    e.target.closest('form').remove();
   }
 
   _renderEditForm(workoutEl) {
@@ -399,9 +450,8 @@ class App {
 
     form.insertAdjacentHTML('afterend', html);
 
-    const btnClose = document.querySelector('.btnClose');
-
     // Close form
+    const btnClose = document.querySelector('.btnClose');
     btnClose.addEventListener('click', e => this._closeForm(e));
   }
 
@@ -413,6 +463,8 @@ class App {
   _moveToPopup(e, workout, workoutEl) {
     // Guard clause to prevent the error after removing a marker from the map in _deleteWorkout function
     if (!workout || !workoutEl) return;
+
+    console.log(workout);
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
