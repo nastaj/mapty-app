@@ -288,6 +288,9 @@ class App {
 
   _eventTarget(e) {
     const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
@@ -295,10 +298,10 @@ class App {
     if (e.target.classList.contains('btnDel'))
       this._deleteWorkout(workout, workoutEl);
     if (e.target.classList.contains('btnEdit')) {
+      this._editWorkout(e, workout);
+
       // Disable button after click
       e.target.classList.add('hidden');
-
-      this._editWorkout(e, workout);
     }
     this._moveToPopup(e, workout, workoutEl);
   }
@@ -390,10 +393,21 @@ class App {
         placeholder="meters"
       />
     </div>
+    <i class="ph ph-x btnClose"></i>
     <button class="form__btn">OK</button>
   </form>`;
 
     form.insertAdjacentHTML('afterend', html);
+
+    const btnClose = document.querySelector('.btnClose');
+
+    // Close form
+    btnClose.addEventListener('click', e => this._closeForm(e));
+  }
+
+  _closeForm(e) {
+    const formEl = e.target.closest('form');
+    formEl.remove();
   }
 
   _moveToPopup(e, workout, workoutEl) {

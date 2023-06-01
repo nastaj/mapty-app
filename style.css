@@ -58,7 +58,7 @@ a:visited {
 
 /* SIDEBAR */
 .sidebar {
-  flex-basis: 50rem;
+  flex-basis: 55rem;
   background-color: var(--color-dark--1);
   padding: 3rem 5rem 4rem 5rem;
   display: flex;
@@ -156,7 +156,8 @@ a:visited {
 
 .form-edit {
   transition: all 0.5s, transform 1ms;
-  z-index: 999;
+  padding-top: 3rem;
+  position: relative;
 }
 
 .form.hidden,
@@ -201,6 +202,14 @@ a:visited {
 
 .form__btn {
   display: none;
+}
+
+.btnClose {
+  font-size: 2rem;
+  position: absolute;
+  right: 20px;
+  top: 5px;
+  cursor: pointer;
 }
 
 .copyright {
