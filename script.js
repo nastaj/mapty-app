@@ -87,6 +87,10 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const btnOpenFunctions = document.querySelector('.btn-hamburger');
+const functionsBoxEl = document.querySelector('.form__functions__box');
+const deleteWorkouts = document.querySelector('.btn__delete__workouts');
+const sortDistance = document.querySelector('.btn__sort--distance');
 
 class App {
   #map;
@@ -105,6 +109,9 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._eventTarget.bind(this));
+    btnOpenFunctions.addEventListener('click', () => {
+      functionsBoxEl.classList.toggle('hidden');
+    });
   }
 
   _getPosition() {
