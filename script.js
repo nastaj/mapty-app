@@ -109,9 +109,11 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._eventTarget.bind(this));
-    btnOpenFunctions.addEventListener('click', () => {
-      functionsBoxEl.classList.toggle('hidden');
-    });
+    btnOpenFunctions.addEventListener('click', this._toggleModal);
+    deleteWorkouts.addEventListener(
+      'click',
+      this._deleteAllWorkouts.bind(this)
+    );
   }
 
   _getPosition() {
@@ -337,6 +339,17 @@ class App {
     location.reload();
   }
 
+  _deleteAllWorkouts() {
+    // Clear workouts array
+    this.#workouts = [];
+
+    // Clear list
+    containerWorkouts.innerHTML = '';
+
+    // Reset local storage
+    localStorage.removeItem('workouts');
+  }
+
   _editWorkout(e, workout) {
     // Display edit form
     const workoutEl = e.target.closest('.workout');
@@ -478,6 +491,10 @@ class App {
   _closeForm(e) {
     const formEl = e.target.closest('form');
     formEl.remove();
+  }
+
+  _toggleModal() {
+    functionsBoxEl.classList.toggle('hidden');
   }
 
   _moveToPopup(e, workout, workoutEl) {
