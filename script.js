@@ -40,6 +40,13 @@ class Running extends Workout {
     this.pace = this.duration / this.distance;
     return this.pace;
   }
+
+  // Needed for edit functionality
+  calcSpeed() {
+    // km/h
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
 }
 
 class Cycling extends Workout {
@@ -56,6 +63,12 @@ class Cycling extends Workout {
     // km/h
     this.speed = this.distance / (this.duration / 60);
     return this.speed;
+  }
+
+  calcPace() {
+    // min/km
+    this.pace = this.duration / this.distance;
+    return this.pace;
   }
 }
 
@@ -297,12 +310,8 @@ class App {
 
     if (e.target.classList.contains('btnDel'))
       this._deleteWorkout(workout, workoutEl);
-    if (e.target.classList.contains('btnEdit')) {
-      this._editWorkout(e, workout);
+    if (e.target.classList.contains('btnEdit')) this._editWorkout(e, workout);
 
-      // Disable button after click
-      // e.target.classList.add('hidden');
-    }
     this._moveToPopup(e, workout, workoutEl);
   }
 
@@ -326,15 +335,28 @@ class App {
     const workoutEl = e.target.closest('.workout');
     this._renderEditForm(workoutEl);
 
+    // Type elements
+    const editType = document.querySelector('.form__input--type--edit');
+    const editCadence = document.querySelector('.form__input--cadence--edit');
+    const editElevation = document.querySelector(
+      '.form__input--elevation--edit'
+    );
+
+    editType.addEventListener('change', () => {
+      editElevation.closest('.form__row').classList.toggle('form__row--hidden');
+      editCadence.closest('.form__row').classList.toggle('form__row--hidden');
+    });
+
+    // Submit edit form
     const form = document.querySelector('.form-edit');
     form.addEventListener('keypress', e => {
       if (e.key === 'Enter') {
-        this._submitEdit(e, workout);
+        this._submitEdit(e, workout, editType, editCadence, editElevation);
       }
     });
   }
 
-  _submitEdit(e, workout) {
+  _submitEdit(e, workout, editType, editCadence, editElevation) {
     e.preventDefault();
 
     // Check functions
@@ -343,20 +365,14 @@ class App {
     const allPositive = (...inputs) => inputs.every(inp => inp > 0);
 
     // Edit Form Elements
-    const editType = document.querySelector('.form__input--type--edit');
     const editDistance = document.querySelector('.form__input--distance--edit');
     const editDuration = document.querySelector('.form__input--duration--edit');
-    const editCadence = document.querySelector('.form__input--cadence--edit');
-    const editElevation = document.querySelector(
-      '.form__input--elevation--edit'
-    );
 
     // Get data from form
     const type = editType.value;
     const distance = +editDistance.value;
     const duration = +editDuration.value;
 
-    console.log(workout);
     // If workout running, modify corresponding running object
     if (type === 'running') {
       const cadence = +editCadence.value;
@@ -391,20 +407,17 @@ class App {
       workout.type = type;
       workout.distance = distance;
       workout.duration = duration;
-      workout.coords = [lat, lng];
       workout.elevationGain = elevation;
 
       // Update speed
       workout.calcSpeed();
     }
 
-    // Render new workout values in list
-
     // Set local storage to all workouts
     this._setLocalStorage();
 
-    // Hide form + Clear input fields
-    e.target.closest('form').remove();
+    // Reload page to see changes
+    location.reload();
   }
 
   _renderEditForm(workoutEl) {
@@ -464,8 +477,6 @@ class App {
     // Guard clause to prevent the error after removing a marker from the map in _deleteWorkout function
     if (!workout || !workoutEl) return;
 
-    console.log(workout);
-
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
       pan: {
@@ -480,7 +491,6 @@ class App {
 
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
-    console.log(data);
 
     if (!data) return;
 
