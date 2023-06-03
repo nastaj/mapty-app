@@ -80,6 +80,8 @@ class Cycling extends Workout {
 // APPLICATION ARCHITECTURE
 
 // Elements
+const sidebar = document.querySelector('.sidebar');
+const popup = document.querySelector('.popup');
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -229,6 +231,12 @@ class App {
 
     // Set local storage to all workouts
     this._setLocalStorage();
+
+    this._showPopup();
+
+    setTimeout(() => {
+      this._hidePopup();
+    }, 5000);
   }
 
   _renderWorkoutMarker(workout) {
@@ -348,6 +356,9 @@ class App {
 
     // Reset local storage
     localStorage.removeItem('workouts');
+
+    // Reload page
+    location.reload();
   }
 
   _editWorkout(e, workout) {
@@ -530,6 +541,14 @@ class App {
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
     });
+  }
+
+  _showPopup() {
+    popup.classList.remove('hidden');
+  }
+
+  _hidePopup() {
+    popup.classList.add('hidden');
   }
 
   reset() {

@@ -60,7 +60,7 @@ a:visited {
 
 /* SIDEBAR */
 .sidebar {
-  flex-basis: 55rem;
+  flex-basis: 57rem;
   background-color: var(--color-dark--1);
   padding: 3rem 5rem 4rem 5rem;
   display: flex;
@@ -221,8 +221,10 @@ a:visited {
 
   position: absolute;
   z-index: 9999;
-  top: 4rem;
-  left: 60.2rem;
+  top: 4.4rem;
+  left: 59.5rem;
+
+  border-radius: 3px;
 }
 
 .form__functions__box.hidden {
@@ -305,4 +307,17 @@ a:visited {
 }
 .cycling-popup .leaflet-popup-content-wrapper {
   border-left: 5px solid var(--color-brand--1);
+}
+
+/* Success/Fail popups */
+.popup {
+  background-color: var(--color-light--2);
+  color: var(--color-dark--1);
+  font-size: 1.6rem;
+  text-align: center;
+  padding: 2rem 6rem;
+  border-radius: 3px;
+  margin-bottom: 2.4rem;
+  position: absolute;
+  left: 10rem;
 }
