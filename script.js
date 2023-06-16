@@ -17,7 +17,9 @@ class Workout {
 
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
-    } ${this.date.getDate()}`;
+    } ${this.date.getDate()} in ${this.location.city}, ${
+      this.location.country
+    }`;
   }
 
   click() {
@@ -28,9 +30,10 @@ class Workout {
 class Running extends Workout {
   type = 'running';
 
-  constructor(coords, distance, duration, cadence) {
+  constructor(coords, distance, duration, cadence, location) {
     super(coords, distance, duration);
     this.cadence = cadence;
+    this.location = location;
     this.calcPace();
     this._setDescription();
   }
@@ -52,9 +55,10 @@ class Running extends Workout {
 class Cycling extends Workout {
   type = 'cycling';
 
-  constructor(coords, distance, duration, elevationGain) {
+  constructor(coords, distance, duration, elevationGain, location) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
+    this.location = location;
     this.calcSpeed();
     this._setDescription();
   }
@@ -189,54 +193,77 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
+    (async () => {
+      try {
+        const response = await fetch(
+          `https://api-bdc.net/data/reverse-geocode?latitude=${lat}&longitude=${lng}&localityLanguage=en&key=bdc_ba6d6b2a0f8e41ea9a428e365d0f7496`
+        );
+        const coords = await response.json();
+        const location = { city: coords.city, country: coords.countryName };
 
-    // If workout running, create running object
-    if (type === 'running') {
-      const cadence = +inputCadence.value;
-      // Check if data is valid
-      if (
-        !validInputs(distance, duration, cadence) ||
-        !allPositive(distance, duration, cadence)
-      )
-        return alert('Inputs have to be positive numbers!');
+        // If workout running, create running object
+        if (type === 'running') {
+          const cadence = +inputCadence.value;
+          // Check if data is valid
+          if (
+            !validInputs(distance, duration, cadence) ||
+            !allPositive(distance, duration, cadence)
+          )
+            return alert('Inputs have to be positive numbers!');
 
-      workout = new Running([lat, lng], distance, duration, cadence);
-    }
+          workout = new Running(
+            [lat, lng],
+            distance,
+            duration,
+            cadence,
+            location
+          );
+        }
 
-    // If workout cycling, create cycling object
-    if (type === 'cycling') {
-      const elevation = +inputElevation.value;
-      // Check if data is valid
-      if (
-        !validInputs(distance, duration, elevation) ||
-        !allPositive(distance, duration)
-      )
-        return alert('Inputs have to be positive numbers!');
+        // If workout cycling, create cycling object
+        if (type === 'cycling') {
+          const elevation = +inputElevation.value;
+          // Check if data is valid
+          if (
+            !validInputs(distance, duration, elevation) ||
+            !allPositive(distance, duration)
+          )
+            return alert('Inputs have to be positive numbers!');
 
-      workout = new Cycling([lat, lng], distance, duration, elevation);
-    }
+          workout = new Cycling(
+            [lat, lng],
+            distance,
+            duration,
+            elevation,
+            location
+          );
+        }
 
-    // Add new object to workout array
-    this.#workouts.push(workout);
-    console.log(workout);
+        // Add new object to workout array
+        this.#workouts.push(workout);
+        console.log(workout);
 
-    // Render workout on map as marker
-    this._renderWorkoutMarker(workout);
+        // Render workout on map as marker
+        this._renderWorkoutMarker(workout);
 
-    // Render workout on list
-    this._renderWorkout(workout);
+        // Render workout on list
+        this._renderWorkout(workout);
 
-    // Hide form + Clear input fields
-    this._hideForm();
+        // Hide form + Clear input fields
+        this._hideForm();
 
-    // Set local storage to all workouts
-    this._setLocalStorage();
+        // Set local storage to all workouts
+        this._setLocalStorage();
 
-    this._showPopup();
+        this._showPopup();
 
-    setTimeout(() => {
-      this._hidePopup();
-    }, 5000);
+        setTimeout(() => {
+          this._hidePopup();
+        }, 5000);
+      } catch (err) {
+        console.log(err);
+      }
+    })();
   }
 
   _renderWorkoutMarker(workout) {
@@ -295,6 +322,9 @@ class App {
           <span class="workout__value">${workout.cadence}</span>
           <span class="workout__unit">spm</span>
         </div>
+        <div class="workout__details">
+          <span class="workout__icon">☀️</span>
+        </div>
        </li>
        `;
 
@@ -309,6 +339,9 @@ class App {
           <span class="workout__icon">⛰</span>
           <span class="workout__value">${workout.elevationGain}</span>
           <span class="workout__unit">m</span>
+        </div>
+        <div class="workout__details">
+          <span class="workout__icon">☀️</span>
         </div>
       </li>
       `;
@@ -443,6 +476,9 @@ class App {
       // Update speed
       workout.calcSpeed();
     }
+
+    // Update description
+    workout._setDescription();
 
     // Set local storage to all workouts
     this._setLocalStorage();

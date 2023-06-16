@@ -106,7 +106,7 @@ a:visited {
 .workout__title {
   font-size: 1.7rem;
   font-weight: 600;
-  grid-column: 1 / 4;
+  grid-column: 1 / 5;
 }
 
 .workout__functions {
