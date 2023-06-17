@@ -97,13 +97,14 @@ const inputElevation = document.querySelector('.form__input--elevation');
 const btnOpenFunctions = document.querySelector('.btn-hamburger');
 const functionsBoxEl = document.querySelector('.form__functions__box');
 const deleteWorkouts = document.querySelector('.btn__delete__workouts');
-const sortDistance = document.querySelector('.btn__sort--distance');
+const btnOverview = document.querySelector('.btn__overview');
 
 class App {
   #map;
   #mapZoomLevel = 13;
   #mapEvent;
   #workouts = [];
+  #markers = [];
 
   constructor() {
     // Get user's position
@@ -121,6 +122,7 @@ class App {
       'click',
       this._deleteAllWorkouts.bind(this)
     );
+    btnOverview.addEventListener('click', this.__zoomOverview.bind(this));
   }
 
   _getPosition() {
@@ -137,7 +139,6 @@ class App {
 
   _loadMap(position) {
     const { latitude, longitude } = position.coords;
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
 
@@ -194,6 +195,7 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
+
     (async () => {
       try {
         const responseGeocode = await fetch(
@@ -251,7 +253,6 @@ class App {
 
         // Add new object to workout array
         this.#workouts.push(workout);
-        console.log(workout);
 
         // Render workout on map as marker
         this._renderWorkoutMarker(workout);
@@ -278,7 +279,7 @@ class App {
   }
 
   _renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
+    const marker = L.marker(workout.coords)
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -295,6 +296,8 @@ class App {
         })`
       )
       .openPopup();
+
+    this.#markers.push(marker);
   }
 
   _renderWorkout(workout) {
@@ -569,14 +572,24 @@ class App {
     });
   }
 
+  __zoomOverview() {
+    if (this.#markers.length === 0) return;
+
+    const markers = new L.featureGroup(this.#markers);
+    this.#map.fitBounds(markers.getBounds().pad(0.5));
+
+    functionsBoxEl.classList.add('hidden');
+  }
+
   _setLocalStorage() {
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
   }
 
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
+    const dataMarkers = JSON.parse(localStorage.getItem('markers'));
 
-    if (!data) return;
+    if (!data && !dataMarkers) return;
 
     // Rebuilding prototype chain
     data.forEach(workout => {
