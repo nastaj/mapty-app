@@ -105,6 +105,7 @@ class App {
   #mapEvent;
   #workouts = [];
   #markers = [];
+  #distances = [];
 
   constructor() {
     // Get user's position
@@ -616,6 +617,42 @@ class App {
   reset() {
     localStorage.removeItem('workouts');
     location.reload();
+  }
+
+  _sortByDistance() {
+    // Sort the #workouts array by distance
+    const sortedWorkouts = this.#workouts.sort(
+      (a, b) => b.distance - a.distance
+    );
+
+    // Clear list
+    const workoutsDOM = document.querySelectorAll('.workout');
+    workoutsDOM.forEach(element => {
+      element.parentNode.removeChild(element);
+    });
+
+    // Render workouts in new order
+    sortedWorkouts.forEach(workout => {
+      this._renderWorkout(workout);
+    });
+  }
+
+  _sortByDuration() {
+    // Sort the #workouts array by distance (ascending)
+    const sortedWorkouts = this.#workouts.sort(
+      (a, b) => b.duration - a.duration
+    );
+
+    // Clear list
+    const workoutsDOM = document.querySelectorAll('.workout');
+    workoutsDOM.forEach(element => {
+      element.parentNode.removeChild(element);
+    });
+
+    // Render workouts in new order
+    sortedWorkouts.forEach(workout => {
+      this._renderWorkout(workout);
+    });
   }
 }
 
