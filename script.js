@@ -5,10 +5,11 @@ class Workout {
   id = (Date.now() + '').slice(-10);
   clicks = 0;
 
-  constructor(coords, distance, duration) {
+  constructor(coords, distance, duration, condition) {
     this.coords = coords; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
+    this.condition = condition; // {text, icon}
   }
 
   _setDescription() {
@@ -30,8 +31,8 @@ class Workout {
 class Running extends Workout {
   type = 'running';
 
-  constructor(coords, distance, duration, cadence, location) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, cadence, location, condition) {
+    super(coords, distance, duration, condition);
     this.cadence = cadence;
     this.location = location;
     this.calcPace();
@@ -55,8 +56,8 @@ class Running extends Workout {
 class Cycling extends Workout {
   type = 'cycling';
 
-  constructor(coords, distance, duration, elevationGain, location) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, elevationGain, location, condition) {
+    super(coords, distance, duration, condition);
     this.elevationGain = elevationGain;
     this.location = location;
     this.calcSpeed();
@@ -195,10 +196,17 @@ class App {
     let workout;
     (async () => {
       try {
-        const response = await fetch(
+        const responseGeocode = await fetch(
           `https://api-bdc.net/data/reverse-geocode?latitude=${lat}&longitude=${lng}&localityLanguage=en&key=bdc_ba6d6b2a0f8e41ea9a428e365d0f7496`
         );
-        const coords = await response.json();
+        const responseWeather = await fetch(
+          `http://api.weatherapi.com/v1/current.json?key=896a929737f44360bf6115704231706&q=${lat},${lng}`
+        );
+
+        const weather = await responseWeather.json();
+        const condition = weather.current.condition;
+
+        const coords = await responseGeocode.json();
         const location = { city: coords.city, country: coords.countryName };
 
         // If workout running, create running object
@@ -216,7 +224,8 @@ class App {
             distance,
             duration,
             cadence,
-            location
+            location,
+            condition
           );
         }
 
@@ -235,7 +244,8 @@ class App {
             distance,
             duration,
             elevation,
-            location
+            location,
+            condition
           );
         }
 
@@ -255,6 +265,7 @@ class App {
         // Set local storage to all workouts
         this._setLocalStorage();
 
+        // Show and hide success popup
         this._showPopup();
 
         setTimeout(() => {
@@ -279,7 +290,9 @@ class App {
         })
       )
       .setPopupContent(
-        `${workout.type === 'running' ? '🏃‍♂️' : '🚴'} ${workout.description}`
+        `${workout.type === 'running' ? '🏃‍♂️' : '🚴'} ${workout.description} (${
+          workout.condition.text
+        })`
       )
       .openPopup();
   }
@@ -323,7 +336,7 @@ class App {
           <span class="workout__unit">spm</span>
         </div>
         <div class="workout__details">
-          <span class="workout__icon">☀️</span>
+          <img class="condition__icon" src="${workout.condition.icon}">
         </div>
        </li>
        `;
@@ -341,7 +354,7 @@ class App {
           <span class="workout__unit">m</span>
         </div>
         <div class="workout__details">
-          <span class="workout__icon">☀️</span>
+          <img class="condition__icon" src="${workout.condition.icon}">
         </div>
       </li>
       `;

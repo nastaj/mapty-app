@@ -127,6 +127,9 @@ a:visited {
   height: 0.28rem;
 }
 
+.condition__icon {
+  height: 3.2rem;
+}
 .workout__value {
   font-size: 1.5rem;
   margin-right: 0.5rem;
