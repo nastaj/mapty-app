@@ -105,7 +105,6 @@ class App {
   #mapEvent;
   #workouts = [];
   #markers = [];
-  #distances = [];
 
   constructor() {
     // Get user's position
@@ -389,26 +388,44 @@ class App {
     // Remove workout from list
     workoutEl.remove();
 
+    // Find the correct marker
+    const marker = this.#markers.find(marker => {
+      return (
+        marker._latlng.lat === workout.coords[0] &&
+        marker._latlng.lng === workout.coords[1]
+      );
+    });
+
     // Remove marker from map
-    L.marker(workout.coords).remove();
+    this.#map.removeLayer(marker);
+
+    // Remove marker from #markers array
+    this.#markers.splice(this.#markers.indexOf(marker), 1);
 
     // Update local storage & refresh the page
     this._setLocalStorage();
-    location.reload();
   }
 
   _deleteAllWorkouts() {
     // Clear workouts array
     this.#workouts = [];
 
+    // Clear markers from map
+    this.#markers.forEach(marker => this.#map.removeLayer(marker));
+
+    // Clear markers array
+    this.#markers = [];
+
     // Clear list
-    containerWorkouts.innerHTML = '';
+    const workoutsDOM = document.querySelectorAll('.workout');
+    workoutsDOM.forEach(element => {
+      element.parentNode.removeChild(element);
+    });
 
     // Reset local storage
     localStorage.removeItem('workouts');
 
-    // Reload page
-    location.reload();
+    functionsBoxEl.classList.add('hidden');
   }
 
   _editWorkout(e, workout) {
@@ -574,12 +591,11 @@ class App {
   }
 
   __zoomOverview() {
+    functionsBoxEl.classList.add('hidden');
     if (this.#markers.length === 0) return;
 
     const markers = new L.featureGroup(this.#markers);
     this.#map.fitBounds(markers.getBounds().pad(0.5));
-
-    functionsBoxEl.classList.add('hidden');
   }
 
   _setLocalStorage() {
@@ -642,6 +658,34 @@ class App {
     const sortedWorkouts = this.#workouts.sort(
       (a, b) => b.duration - a.duration
     );
+
+    // Clear list
+    const workoutsDOM = document.querySelectorAll('.workout');
+    workoutsDOM.forEach(element => {
+      element.parentNode.removeChild(element);
+    });
+
+    // Render workouts in new order
+    sortedWorkouts.forEach(workout => {
+      this._renderWorkout(workout);
+    });
+  }
+
+  _sortByType() {
+    // Sort the #workouts array by type
+    const sortedWorkouts = this.#workouts.sort((a, b) => {
+      const typeA = a.type.toUpperCase(); // ignore upper and lowercase
+      const typeB = b.type.toUpperCase(); // ignore upper and lowercase
+      if (typeA < typeB) {
+        return -1;
+      }
+      if (typeA > typeB) {
+        return 1;
+      }
+
+      // names must be equal
+      return 0;
+    });
 
     // Clear list
     const workoutsDOM = document.querySelectorAll('.workout');

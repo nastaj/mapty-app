@@ -54,10 +54,6 @@ a:visited {
   color: var(--color-brand--1);
 }
 
-.hidden {
-  display: none;
-}
-
 /* SIDEBAR */
 .sidebar {
   flex-basis: 57rem;
@@ -228,10 +224,14 @@ a:visited {
   left: 59.5rem;
 
   border-radius: 3px;
+
+  opacity: 1;
+  transition: 0.2s ease-in;
 }
 
 .form__functions__box.hidden {
-  display: none;
+  opacity: 0;
+  transform: translate(-20px);
 }
 
 .form__functions__box button {
@@ -323,4 +323,11 @@ a:visited {
   margin-bottom: 2.4rem;
   position: absolute;
   left: 10rem;
+
+  opacity: 1;
+  transition: 0.3s all;
+}
+
+.popup.hidden {
+  opacity: 0;
 }
